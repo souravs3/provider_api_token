@@ -3,6 +3,8 @@ import 'package:provider/provider.dart';
 import 'package:test_api_provider/controller/provider/atendees_provider.dart';
 import 'package:test_api_provider/controller/provider/auth_provider.dart';
 import 'package:test_api_provider/controller/provider/details_provider.dart';
+import 'package:test_api_provider/controller/provider/group_provider.dart';
+import 'package:test_api_provider/view/home.dart';
 import 'package:test_api_provider/view/login.dart';
 
 void main() {
@@ -19,9 +21,19 @@ class MyApp extends StatelessWidget {
         ChangeNotifierProvider(create: (context) => AuthProvider()),
         ChangeNotifierProvider(create: (context) => DetailsProvider()),
         ChangeNotifierProvider(create: (context) => AtendeesProvider()),
+        ChangeNotifierProvider(create: (context) => GroupProvider()),
       ],
       child: MaterialApp(
-        home: Login(),
+        theme: ThemeData.dark(),
+        home: Consumer<AuthProvider>(
+          builder: (context, value, child) {
+            if (value.isLoggedIn) {
+              return Home();
+            } else {
+              return Login();
+            }
+          },
+        ),
       ),
     );
   }

@@ -1,7 +1,11 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:test_api_provider/controller/provider/auth_provider.dart';
 import 'package:test_api_provider/controller/provider/details_provider.dart';
+import 'package:test_api_provider/controller/provider/group_provider.dart';
+import 'package:test_api_provider/model/attentice_model.dart';
 import 'package:test_api_provider/view/atendees_page.dart';
+import 'package:test_api_provider/view/login.dart';
 import 'package:test_api_provider/view/styles/text_styles.dart';
 
 class Home extends StatelessWidget {
@@ -9,27 +13,32 @@ class Home extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final provider = Provider.of<DetailsProvider>(context, listen: false);
+    final detailsProvider =
+        Provider.of<DetailsProvider>(context, listen: false);
+    final groupProvider = Provider.of<GroupProvider>(context, listen: false);
 
-    // Fetch event details when the widget is built
+    // Fetch event details and groups when the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      provider.getAllDetails();
+      detailsProvider.getAllDetails();
+      groupProvider.fetchGroups();
     });
 
+    bool _isLoggingOut = false;
+
     return Scaffold(
-      backgroundColor: Color.fromRGBO(23, 168, 125, 20),
-      body: Consumer<DetailsProvider>(
-        builder: (context, provider, child) {
-          if (provider.isLoading) {
+      backgroundColor: Colors.black,
+      body: Consumer2<DetailsProvider, GroupProvider>(
+        builder: (context, detailsProvider, groupProvider, child) {
+          if (detailsProvider.isLoading) {
             return const Center(
               child: CircularProgressIndicator(),
             );
-          } else if (provider.eventModel == null) {
+          } else if (detailsProvider.eventModel == null) {
             return const Center(
               child: Text('No data is available'),
             );
           } else {
-            final event = provider.eventModel!;
+            final event = detailsProvider.eventModel!;
             return Container(
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -37,14 +46,51 @@ class Home extends StatelessWidget {
                   Container(
                     height: 100,
                     width: double.infinity,
-                    decoration:
-                        BoxDecoration(color: Color.fromRGBO(23, 168, 125, 100)),
+                    decoration: BoxDecoration(color: Colors.pink),
                     child: Center(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 30),
-                        child: Text(
-                          '${event.title}',
-                          style: AppTextStyles().titleStyle(),
+                        child: Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 10),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Text(
+                                '${event.title}',
+                                style: AppTextStyles().titleStyle(),
+                              ),
+                              Consumer<AuthProvider>(
+                                builder: (context, value, child) {
+                                  return GestureDetector(
+                                    onTap: () {
+                                      if (!_isLoggingOut) {
+                                        // Check if not already logging out
+                                        _isLoggingOut =
+                                            true; // Set flag to true to indicate logout process started
+                                        value.logout().then((_) {
+                                          Navigator.pushReplacement(
+                                            context,
+                                            MaterialPageRoute(
+                                                builder: (context) => Login()),
+                                          );
+                                        }).catchError((error) {
+                                          // Handle error if any
+                                          print("Logout error: $error");
+                                        }).whenComplete(() {
+                                          _isLoggingOut =
+                                              false; // Reset flag when logout process completes
+                                        });
+                                      }
+                                    },
+                                    child: Icon(
+                                      Icons.logout,
+                                      color: Colors.white,
+                                    ),
+                                  );
+                                },
+                              )
+                            ],
+                          ),
                         ),
                       ),
                     ),
@@ -57,10 +103,10 @@ class Home extends StatelessWidget {
                       height: 150,
                       width: 150,
                       decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(100),
                         image: DecorationImage(
                           image: NetworkImage(event.eventlogo),
-                          fit: BoxFit
-                              .cover, // Optional: adjust this based on how you want the image to fit
+                          fit: BoxFit.cover,
                         ),
                       ),
                     ),
@@ -84,24 +130,27 @@ class Home extends StatelessWidget {
                               children: [
                                 Text(
                                   'Attendees: ${event.attendees}',
-                                  style: const TextStyle(fontSize: 16),
+                                  style: const TextStyle(
+                                      fontSize: 16, color: Colors.black),
                                 ),
                                 ElevatedButton(
-                                    style: ButtonStyle(
-                                        elevation: WidgetStatePropertyAll(0),
-                                        backgroundColor: WidgetStatePropertyAll(
-                                            Colors.deepOrange)),
-                                    onPressed: () {
-                                      Navigator.push(
-                                          context,
-                                          MaterialPageRoute(
-                                              builder: (context) =>
-                                                  Atendees_page()));
-                                    },
-                                    child: Text(
-                                      'Show all',
-                                      style: TextStyle(color: Colors.white),
-                                    ))
+                                  style: ButtonStyle(
+                                    elevation: WidgetStatePropertyAll(0),
+                                    backgroundColor:
+                                        WidgetStatePropertyAll(Colors.pink),
+                                  ),
+                                  onPressed: () {
+                                    Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                            builder: (context) =>
+                                                Atendees_page()));
+                                  },
+                                  child: Text(
+                                    'Show all',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
+                                )
                               ],
                             ),
                           ),
@@ -136,6 +185,37 @@ class Home extends StatelessWidget {
                         SizedBox(
                           height: 30,
                         ),
+                        Text(
+                          'Groups',
+                          style: TextStyle(fontSize: 24),
+                        ),
+                        Container(
+                          height: 300,
+                          child: ListView.builder(
+                            scrollDirection: Axis.vertical,
+                            shrinkWrap: true,
+                            itemCount: groupProvider.groups.length,
+                            itemBuilder: (context, index) {
+                              final groupName = groupProvider.groups[index];
+                              return ListTile(
+                                title: Text(
+                                  groupName,
+                                  style: TextStyle(color: Colors.white),
+                                ),
+                                trailing: TextButton(
+                                  onPressed: () {
+                                    _showGroupDetails(
+                                        context,
+                                        groupName,
+                                        groupProvider
+                                            .groupAttendees[groupName]!);
+                                  },
+                                  child: Text('See All'),
+                                ),
+                              );
+                            },
+                          ),
+                        ),
                       ],
                     ),
                   )
@@ -145,6 +225,47 @@ class Home extends StatelessWidget {
           }
         },
       ),
+    );
+  }
+
+  void _showGroupDetails(
+      BuildContext context, String groupName, List<Attendee> attendees) {
+    showDialog(
+      context: context,
+      builder: (context) {
+        return AlertDialog(
+          title: Text(groupName),
+          content: Container(
+            width: double.minPositive,
+            child: ListView.builder(
+              shrinkWrap: true,
+              itemCount: attendees.length,
+              itemBuilder: (context, index) {
+                final attendee = attendees[index];
+                return ListTile(
+                  title: Text(
+                    attendee.name,
+                    style: TextStyle(color: Colors.white),
+                  ),
+                  subtitle: Text(attendee.email),
+                  leading: CircleAvatar(
+                    backgroundImage: attendee.photo.isNotEmpty
+                        ? NetworkImage(attendee.photo)
+                        : null,
+                    child: attendee.photo.isEmpty ? Icon(Icons.person) : null,
+                  ),
+                );
+              },
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text('Close'),
+            ),
+          ],
+        );
+      },
     );
   }
 }
