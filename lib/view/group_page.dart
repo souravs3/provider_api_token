@@ -2,9 +2,11 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_api_provider/model/attentice_model.dart';
 import 'package:test_api_provider/controller/provider/group_provider.dart';
+import 'package:test_api_provider/view/home.dart';
 
 class GroupPage extends StatelessWidget {
   final List<Attendee> attendees;
+  final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
 
   GroupPage({Key? key, required this.attendees}) : super(key: key);
 
@@ -22,27 +24,46 @@ class GroupPage extends StatelessWidget {
         child: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            TextFormField(
-              controller: groupController,
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                hintText: 'Enter the Group Name',
-              ),
-            ),
-            SizedBox(height: 20),
-            Center(
-              child: ElevatedButton(
-                style: ButtonStyle(
-                    backgroundColor: WidgetStatePropertyAll(Colors.pink)),
-                onPressed: () async {
-                  final groupProvider =
-                      Provider.of<GroupProvider>(context, listen: false);
-                  await groupProvider.saveGroup(groupController.text);
-                },
-                child: Text(
-                  'Add to Group',
-                  style: TextStyle(color: Colors.white),
-                ),
+            Form(
+              key: _formKey,
+              child: Column(
+                children: [
+                  TextFormField(
+                    controller: groupController,
+                    decoration: InputDecoration(
+                      border: OutlineInputBorder(),
+                      hintText: 'Enter the Group Name',
+                    ),
+                    validator: (value) {
+                      if (value == null || value.isEmpty) {
+                        return 'Please enter a group name';
+                      }
+                      return null;
+                    },
+                  ),
+                  SizedBox(height: 20),
+                  Center(
+                    child: ElevatedButton(
+                      style: ButtonStyle(
+                          backgroundColor:
+                              MaterialStateProperty.all(Colors.pink)),
+                      onPressed: () async {
+                        if (_formKey.currentState!.validate()) {
+                          final groupProvider = Provider.of<GroupProvider>(
+                              context,
+                              listen: false);
+                          await groupProvider.saveGroup(groupController.text);
+                          Navigator.pushReplacement(context,
+                              MaterialPageRoute(builder: (context) => Home()));
+                        }
+                      },
+                      child: Text(
+                        'Add to Group',
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
             SizedBox(height: 20),

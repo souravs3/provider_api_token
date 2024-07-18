@@ -46,7 +46,7 @@ class Home extends StatelessWidget {
                   Container(
                     height: 100,
                     width: double.infinity,
-                    decoration: BoxDecoration(color: Colors.pink),
+                    decoration: BoxDecoration(color: Colors.teal),
                     child: Center(
                       child: Padding(
                         padding: const EdgeInsets.only(top: 30),
@@ -137,7 +137,7 @@ class Home extends StatelessWidget {
                                   style: ButtonStyle(
                                     elevation: WidgetStatePropertyAll(0),
                                     backgroundColor:
-                                        WidgetStatePropertyAll(Colors.pink),
+                                        WidgetStatePropertyAll(Colors.teal),
                                   ),
                                   onPressed: () {
                                     Navigator.push(
@@ -210,7 +210,10 @@ class Home extends StatelessWidget {
                                         groupProvider
                                             .groupAttendees[groupName]!);
                                   },
-                                  child: Text('See All'),
+                                  child: Text(
+                                    'See All',
+                                    style: TextStyle(color: Colors.white),
+                                  ),
                                 ),
                               );
                             },

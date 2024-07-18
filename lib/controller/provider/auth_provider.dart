@@ -19,6 +19,10 @@ class AuthProvider with ChangeNotifier {
     notifyListeners();
   }
 
+  bool hasTextFieldsValue(String email, String password) {
+    return email.isNotEmpty && password.isNotEmpty;
+  }
+
   Future<void> login(String email, String password) async {
     setLoading(true);
     final uri = Uri.parse('https://api.acad360.com/v1.1/attendees/login');

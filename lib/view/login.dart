@@ -1,9 +1,10 @@
+// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
+
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_api_provider/controller/provider/auth_provider.dart';
 import 'package:test_api_provider/view/home.dart';
 
-// ignore: must_be_immutable
 class Login extends StatelessWidget {
   Login({super.key});
 
@@ -16,7 +17,7 @@ class Login extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
-        backgroundColor: Colors.deepOrange,
+        backgroundColor: Colors.pink,
         title: Text(
           'Login',
           style: TextStyle(
@@ -36,6 +37,11 @@ class Login extends StatelessWidget {
             });
           }
 
+          bool hasValues = authProvider.hasTextFieldsValue(
+            emailController.text,
+            passwordController.text,
+          );
+
           return Form(
             key: _formKey,
             child: Column(
@@ -44,7 +50,7 @@ class Login extends StatelessWidget {
                   controller: emailController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    label: Text('Email'),
+                    labelText: 'Email',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -55,15 +61,18 @@ class Login extends StatelessWidget {
                     }
                     return null;
                   },
+                  onChanged: (value) {
+                    // Update button state when text changes
+
+                    authProvider.notifyListeners();
+                  },
                 ),
-                SizedBox(
-                  height: 30,
-                ),
+                SizedBox(height: 30),
                 TextFormField(
                   controller: passwordController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    label: Text('Password'),
+                    labelText: 'Password',
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -72,15 +81,25 @@ class Login extends StatelessWidget {
                     return null;
                   },
                   obscureText: true,
+                  onChanged: (value) {
+                    // Update button state when text changes
+                    authProvider.notifyListeners();
+                  },
                 ),
-                SizedBox(
-                  height: 30,
-                ),
+                SizedBox(height: 30),
                 ElevatedButton(
                   style: ButtonStyle(
-                      backgroundColor:
-                          WidgetStatePropertyAll(Colors.deepOrange)),
-                  onPressed: authProvider.loading
+                    backgroundColor:
+                        WidgetStateProperty.resolveWith<Color>((states) {
+                      if (hasValues) {
+                        return Colors.pink;
+                      } else {
+                        return Colors
+                            .transparent; // Change to grey when no values
+                      }
+                    }),
+                  ),
+                  onPressed: authProvider.loading || !hasValues
                       ? null
                       : () {
                           if (_formKey.currentState?.validate() ?? false) {
@@ -91,7 +110,7 @@ class Login extends StatelessWidget {
                               if (!authProvider.isLoggedIn) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('Invalid user credentials'),
+                                    content: Text('User Not Found'),
                                   ),
                                 );
                               }
