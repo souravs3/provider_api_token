@@ -9,18 +9,12 @@ class AuthProvider with ChangeNotifier {
 
   bool get isLoggedIn => _isLoggedIn;
   bool get loading => _loading;
-
   AuthProvider() {
     _checkLoginStatus();
   }
-
   void setLoading(bool value) {
     _loading = value;
     notifyListeners();
-  }
-
-  bool hasTextFieldsValue(String email, String password) {
-    return email.isNotEmpty && password.isNotEmpty;
   }
 
   Future<void> login(String email, String password) async {
@@ -83,5 +77,9 @@ class AuthProvider with ChangeNotifier {
     await prefs.remove('token');
     _isLoggedIn = false;
     notifyListeners();
+  }
+
+  bool hasTextFieldsValue(String email, String password) {
+    return email.isNotEmpty && password.isNotEmpty;
   }
 }

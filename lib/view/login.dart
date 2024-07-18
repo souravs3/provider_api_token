@@ -1,25 +1,48 @@
-// ignore_for_file: invalid_use_of_visible_for_testing_member, invalid_use_of_protected_member
-
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:test_api_provider/controller/provider/auth_provider.dart';
 import 'package:test_api_provider/view/home.dart';
 
-class Login extends StatelessWidget {
-  Login({super.key});
+class Login extends StatefulWidget {
+  const Login({super.key});
 
+  @override
+  _LoginState createState() => _LoginState();
+}
+
+class _LoginState extends State<Login> {
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
   final GlobalKey<FormState> _formKey = GlobalKey<FormState>();
+
+  @override
+  void initState() {
+    super.initState();
+    emailController.addListener(_onTextChanged);
+    passwordController.addListener(_onTextChanged);
+  }
+
+  @override
+  void dispose() {
+    emailController.removeListener(_onTextChanged);
+    passwordController.removeListener(_onTextChanged);
+    emailController.dispose();
+    passwordController.dispose();
+    super.dispose();
+  }
+
+  void _onTextChanged() {
+    setState(() {});
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
         toolbarHeight: 80,
-        backgroundColor: Colors.pink,
+        backgroundColor: Colors.teal,
         title: Text(
-          'Login',
+          'Login Page',
           style: TextStyle(
               color: Colors.white, fontSize: 24, fontWeight: FontWeight.w400),
         ),
@@ -37,11 +60,6 @@ class Login extends StatelessWidget {
             });
           }
 
-          bool hasValues = authProvider.hasTextFieldsValue(
-            emailController.text,
-            passwordController.text,
-          );
-
           return Form(
             key: _formKey,
             child: Column(
@@ -50,7 +68,7 @@ class Login extends StatelessWidget {
                   controller: emailController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Email',
+                    label: Text('Email'),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -61,18 +79,15 @@ class Login extends StatelessWidget {
                     }
                     return null;
                   },
-                  onChanged: (value) {
-                    // Update button state when text changes
-
-                    authProvider.notifyListeners();
-                  },
                 ),
-                SizedBox(height: 30),
+                SizedBox(
+                  height: 30,
+                ),
                 TextFormField(
                   controller: passwordController,
                   decoration: InputDecoration(
                     border: OutlineInputBorder(),
-                    labelText: 'Password',
+                    label: Text('Password'),
                   ),
                   validator: (value) {
                     if (value == null || value.isEmpty) {
@@ -81,25 +96,23 @@ class Login extends StatelessWidget {
                     return null;
                   },
                   obscureText: true,
-                  onChanged: (value) {
-                    // Update button state when text changes
-                    authProvider.notifyListeners();
-                  },
                 ),
-                SizedBox(height: 30),
+                SizedBox(
+                  height: 30,
+                ),
                 ElevatedButton(
                   style: ButtonStyle(
-                    backgroundColor:
-                        WidgetStateProperty.resolveWith<Color>((states) {
-                      if (hasValues) {
-                        return Colors.pink;
-                      } else {
-                        return Colors
-                            .transparent; // Change to grey when no values
-                      }
-                    }),
+                    backgroundColor: WidgetStateProperty.resolveWith<Color>(
+                      (Set<WidgetState> states) {
+                        if (authProvider.hasTextFieldsValue(
+                            emailController.text, passwordController.text)) {
+                          return Colors.teal;
+                        }
+                        return Colors.transparent;
+                      },
+                    ),
                   ),
-                  onPressed: authProvider.loading || !hasValues
+                  onPressed: authProvider.loading
                       ? null
                       : () {
                           if (_formKey.currentState?.validate() ?? false) {
@@ -110,7 +123,7 @@ class Login extends StatelessWidget {
                               if (!authProvider.isLoggedIn) {
                                 ScaffoldMessenger.of(context).showSnackBar(
                                   SnackBar(
-                                    content: Text('User Not Found'),
+                                    content: Text('Invalid user credentials'),
                                   ),
                                 );
                               }

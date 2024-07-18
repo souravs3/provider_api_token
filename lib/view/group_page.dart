@@ -17,7 +17,7 @@ class GroupPage extends StatelessWidget {
     return Scaffold(
       appBar: AppBar(
         title: Text('Group Management'),
-        backgroundColor: Colors.pink,
+        backgroundColor: Colors.teal,
       ),
       body: Padding(
         padding: const EdgeInsets.all(18.0),
@@ -46,7 +46,7 @@ class GroupPage extends StatelessWidget {
                     child: ElevatedButton(
                       style: ButtonStyle(
                           backgroundColor:
-                              MaterialStateProperty.all(Colors.pink)),
+                              WidgetStateProperty.all(Colors.teal)),
                       onPressed: () async {
                         if (_formKey.currentState!.validate()) {
                           final groupProvider = Provider.of<GroupProvider>(
@@ -81,7 +81,7 @@ class GroupPage extends StatelessWidget {
                       final attendee = attendees[index];
                       return ListTile(
                         leading: CircleAvatar(
-                          backgroundColor: Colors.pink,
+                          backgroundColor: Colors.teal,
                           child: attendee.photo.isNotEmpty
                               ? Image.network(
                                   attendee.photo,
@@ -91,7 +91,7 @@ class GroupPage extends StatelessWidget {
                         ),
                         title: Text(attendee.name),
                         trailing: Checkbox(
-                          activeColor: Colors.pink,
+                          activeColor: Colors.teal,
                           checkColor: Colors.white,
                           shape: CircleBorder(),
                           value: groupProvider.isSelected(attendee),

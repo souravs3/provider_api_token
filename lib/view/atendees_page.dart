@@ -14,7 +14,7 @@ class Atendees_page extends StatelessWidget {
     return Scaffold(
         appBar: AppBar(
           title: Text('Attendees List'),
-          backgroundColor: Colors.pink,
+          backgroundColor: Colors.teal,
         ),
         body: Consumer<AtendeesProvider>(
           builder: (context, atendeesProvider, child) {
@@ -32,7 +32,7 @@ class Atendees_page extends StatelessWidget {
                   final attendee = attendees[index];
                   return ListTile(
                     leading: CircleAvatar(
-                      backgroundColor: Colors.pink,
+                      backgroundColor: Colors.teal,
                       child: attendee.photo.isNotEmpty
                           ? Image.network(attendee.photo, fit: BoxFit.fill)
                           : Icon(Icons.person),
@@ -51,7 +51,7 @@ class Atendees_page extends StatelessWidget {
         floatingActionButton: Consumer<AtendeesProvider>(
           builder: (context, value, child) {
             return FloatingActionButton.extended(
-                backgroundColor: Colors.pink,
+                backgroundColor: Colors.teal,
                 onPressed: () {
                   Navigator.push(
                       context,
